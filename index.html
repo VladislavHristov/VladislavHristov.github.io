@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Проверка на регистрационен номер</title>
+    <style>
+        /* Вашият CSS код тук */
+    </style>
+    <script>
+        function checkNumber() {
+            var regNumber = document.getElementById('regNumber').value;
+            var apiUrl = 'https://myve.bg:4402/check/get/vinetka';
+
+            // Създаваме URL за заявката към API-то с въведения регистрационен номер
+            var requestUrl = apiUrl + '?regNumber=' + encodeURIComponent(regNumber);
+
+            // Изпращаме GET заявка към API-то
+            fetch(requestUrl)
+                .then(response => response.json())
+                .then(data => {
+                    // Обработка на отговора от API-то
+                    if (data.error) {
+                        displayResult('Грешка: ' + data.error);
+                    } else {
+                        displayResult('Информация за номера: ' + JSON.stringify(data));
+                    }
+                })
+                .catch(error => {
+                    displayResult('Възникна грешка при заявката: ' + error.message);
+                });
+        }
+
+        function displayResult(message) {
+            var resultContainer = document.getElementById('result');
+            resultContainer.innerHTML = message;
+        }
+    </script>
+</head>
+<body>
+    <h1>Проверка на регистрационен номер на кола</h1>
+    <form>
+        <label for="regNumber">Въведете регистрационен номер:</label>
+        <input type="text" id="regNumber" required>
+        <button type="button" onclick="checkNumber()">Провери</button>
+    </form>
+    <div class="result" id="result"></div>
+</body>
+</html>
