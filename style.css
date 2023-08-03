@@ -1,0 +1,86 @@
+/* Общ стил на страницата */
+body {
+    background-color: #f0f0f0;
+    color: #333;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Стил на контейнера */
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+/* Стил на формата */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+label {
+    margin-bottom: 10px;
+}
+
+/* Стилове за текстовото поле */
+input[type="text"] {
+    max-width: 200px;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+}
+
+/* Стилове за фокусираното текстово поле */
+input[type="text"]:focus {
+    box-shadow: 0 0 5px #007bff;
+}
+
+button[type="submit"] {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Стил на резултатите */
+.result {
+    margin-top: 20px;
+}
+
+/* Стил на грешките */
+.error {
+    color: #c0392b;
+}
+
+hr {
+    width: 100%;
+    height: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #b7d0e2;
+    border: none;
+}
+
+hr1 {
+    width: 100%;
+    height: 1px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #333;
+    border: none;
+}
