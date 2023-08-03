@@ -1,90 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Проверка на регистрационен номер</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка за Технически преглед, Гражданска отговорност и Винетка</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <hr>
+		<h1>Проверка за Технически преглед, Гражданска отговорност и Винетка</h1>
+		<hr>
+		<br>
+		<br>
+        <form id="checkForm">
+            <label for="plate">Регистрационен номер</label>
+			<input type="text" placeholder="A0001BA" name="plate" id="plate" required pattern="[а-яА-Яa-zA-Z0-9]+" title="Позволени са само кирилица, латиница и числа.">
+            <button type="submit">Провери</button>
+        </form>
+        <div class="result" id="resultDiv">
+            <!-- Резултатите ще бъдат изведени тук -->
+        </div>
+    </div>
 
-        h1 {
-            color: #007bff;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input[type="text"] {
-            padding: 5px;
-            font-size: 16px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-align: left;
-        }
-    </style>
     <script>
-        function checkNumbers() {
-            var regNumber = document.getElementById('regNumber').value;
-            var apiURLs = [
-                'https://myve.bg:4402/check/get/zastrahovka?regNumber=' + encodeURIComponent(regNumber),
-                'https://myve.bg:4402/check/get/vinetka?regNumber=' + encodeURIComponent(regNumber),
-                'https://myve.bg:4402/check/get/gtp?regNumber=' + encodeURIComponent(regNumber)
-            ];
+        function generate_random_email() {
+            // Генериране на случаен email с формат something@gmail.com
+            var random_word = Math.random().toString(36).substring(2, 10);
+            return random_word + "@gmail.com";
+        }
 
-            var resultContainer = document.getElementById('result');
-            resultContainer.innerHTML = ''; // Изчистваме предишния резултат
+        function get_data_from_api(url, payload) {
+            // Изпращане на POST заявка към API и връщане на отговора в JSON формат
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }).then(response => response.json());
+        }
 
-            for (var i = 0; i < apiURLs.length; i++) {
-                fetch(apiURLs[i])
-                    .then(response => response.json())
-                    .then(data => {
-                        // Обработка на отговора от API-то
-                        if (data.error) {
-                            displayResult('Грешка: ' + data.error);
-                        } else {
-                            displayResult(JSON.stringify(data));
-                        }
-                    })
-                    .catch(error => {
-                        displayResult('Възникна грешка при заявката: ' + error.message);
-                    });
+        document.getElementById('checkForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var plateNumber = document.getElementById('plate').value;
+
+            // Генериране на случаен email
+            var email = generate_random_email();
+
+            // Заявка към първото API - гражданска отговорност
+            var payload1 = { email: email, plate: plateNumber };
+get_data_from_api('https://myve.bg:4402/check/get/zastrahovka', payload1)
+    .then(function(response1) {
+        var resultHtml = '';
+        if (response1.data === "no info") {
+            resultHtml += '<h3>Гражданска отговорност</h3>';
+            resultHtml += '<p>Няма валидна гражданска отговорност</p>';
+        } else {
+            var big_data = response1.data.big_data || [];
+            if (big_data.length > 0) {
+                resultHtml += '<h3>Гражданска отговорност</h3>';
+                for (var i = 0; i < big_data.length; i++) {
+                    var insuranceCompany = big_data[i][0];
+                    var validFrom = big_data[i][1];
+                    var validTo = big_data[i][2];
+
+                    resultHtml += '<p>Застрахователна компания: ' + insuranceCompany + '</p>';
+                    resultHtml += '<p>Валидна от: ' + validFrom + '</p>';
+                    resultHtml += '<p>Валидна до: ' + validTo + '</p>';
+                    resultHtml += '<hr>';
+                }
+            } else {
+                resultHtml += '<h3>Гражданска отговорност</h3>';
+                resultHtml += '<p>Няма информация за гражданска отговорност</p>';
+				resultHtml += '<hr>';
             }
         }
 
-        function displayResult(message) {
-            var resultContainer = document.getElementById('result');
-            resultContainer.innerHTML += message + '<br>';
-        }
+        // Заявка към второто API - технически преглед
+        var payload2 = { email: email, plate: plateNumber };
+        return get_data_from_api('https://myve.bg:4402/check/get/gtp', payload2)
+            .then(function(response2) {
+                if (response2.data) {
+                    var technical_inspection_data = response2.data;
+                    var valid_to_match = /валиден до\n\n(\d{2}\.\d{2}\.\d{4})/.exec(technical_inspection_data);
+                    var valid_to = valid_to_match ? valid_to_match[1] : null;
+                    resultHtml += '<h3>Технически преглед</h3>';
+                    if (valid_to) {
+                        resultHtml += '<p>Технически преглед до: ' + valid_to + '</p>';
+                    } else {
+                        resultHtml += '<p>Няма данни за валиден технически преглед!</p>';
+                    }
+                    resultHtml += '<hr>';
+                } else {
+                    resultHtml += '<h3>Технически преглед</h3>';
+                    resultHtml += '<p>Няма информация за технически преглед</p>';
+                    resultHtml += '<hr>';
+                }
+
+                // Заявка към третото API - винетка
+                var payload3 = { email: email, plate: plateNumber };
+                return get_data_from_api('https://myve.bg:4402/check/get/vinetka', payload3)
+                    .then(function(response3) {
+                        resultHtml += '<h3>Винетка</h3>';
+                        if (response3.data === "no info") {
+                            resultHtml += '<p>Съжаляваме, но не беше открита активна винетка.</p>';
+                        } else {
+                            var vinetkaData = response3.data;
+                            resultHtml += '<p>Състояние: ' + vinetkaData.active + '</p>';
+                            resultHtml += '<p>Регистрационен номер: ' + vinetkaData.nomer + '</p>';
+                            resultHtml += '<p>Категория: ' + vinetkaData.category + '</p>';
+                            resultHtml += '<p>Валидна от: ' + vinetkaData.valid_from + '</p>';
+                            resultHtml += '<p>Валидна до: ' + vinetkaData.valid_to + '</p>';
+                            resultHtml += '<p>Цена: ' + vinetkaData.price + '</p>';
+                        }
+
+                                    document.getElementById('resultDiv').innerHTML = resultHtml;
+                                });
+                        });
+                })
+                .catch(function(error) {
+                    document.getElementById('resultDiv').innerHTML = '<p>Грешка при извличане на данни: ' + error + '</p>';
+                });
+        });
     </script>
-</head>
-<body>
-    <h1>Проверка на регистрационен номер на кола</h1>
-    <form>
-        <label for="regNumber">Въведете регистрационен номер:</label>
-        <input type="text" id="regNumber" required>
-        <button type="button" onclick="checkNumbers()">Провери</button>
-    </form>
-    <div class="result" id="result"></div>
 </body>
 </html>
