@@ -25,6 +25,7 @@ Technologies Used
 
     HTML: The backbone of the project, providing the structure of the web pages.
     CSS: Styling elements to ensure a visually appealing and user-friendly interface.
+    API Integration: Utilizes a third-party API to fetch and display real-time information for accurate results.
 
 Preview
 ![image](https://github.com/VladislavHristov/VladislavHristov.github.io/assets/136968279/8afc8b5f-b968-43ef-a395-ed761d906540)
